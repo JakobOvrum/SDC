@@ -283,13 +283,13 @@ void genReturnStatement(ast.ReturnStatement statement, Module mod)
         return; 
     }
     
-    if (mod.inferringFunction && statement.expression is null) {
+    if (mod.currentFunction.type.returnType.dtype == DType.Inferred && statement.expression is null) {
         throw new InferredTypeFoundException(new VoidType(mod));
     }
     
     auto val = genExpression(statement.expression, mod);
     
-    if (mod.inferringFunction) {
+    if (mod.currentFunction.type.returnType.dtype == DType.Inferred) {
         throw new InferredTypeFoundException(val.type);
     }
     

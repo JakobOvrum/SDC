@@ -48,7 +48,6 @@ class Module
     ast.Linkage currentLinkage = ast.Linkage.ExternD;
     ast.Access currentAccess = ast.Access.Public;
     bool isAlias;  // ewwww
-    bool inferringFunction;  // OH GOD
     Function expressionFunction;  // WHAT THE FUCK IS WRONG WITH ME?
     TranslationUnit[] importedTranslationUnits;
     string arch;

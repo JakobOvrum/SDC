@@ -120,7 +120,6 @@ void declareFunctionDeclaration(ast.FunctionDeclaration decl, Module mod)
     
     if (fn.type.returnType.dtype == DType.Inferred) {
         auto inferrenceContext = mod.dup;
-        inferrenceContext.inferringFunction = true;
         
         try {
             // Why in fuck's name am I doing this _here_? Oh well; TODO.
@@ -256,18 +255,20 @@ void genFunctionBody(ast.FunctionBody functionBody, ast.FunctionDeclaration decl
     }
     genBlockStatement(functionBody.statement, mod);
     if (mod.currentFunction.cfgEntry.canReachWithoutExit(mod.currentFunction.cfgTail)) {
-        if (fn.type.returnType.dtype == DType.Void) {
-            LLVMBuildRetVoid(mod.builder);
-        } else if (mod.inferringFunction) {
-            throw new InferredTypeFoundException(new VoidType(mod));
-        } else {
+        switch(fn.type.returnType.dtype) {
+            case DType.Void:
+                LLVMBuildRetVoid(mod.builder);
+                break;
+            case DType.Inferred:
+                throw new InferredTypeFoundException(new VoidType(mod));
+            default:
             throw new CompilerError(
                 decl.location, 
                 format(`function "%s" expected to return a value of type "%s".`,
                     mod.currentFunction.simpleName, 
                     fn.type.returnType.name()
-                )
-            );
+                  )
+              );
         }
     } else if (!mod.currentFunction.cfgTail.isExitBlock) {
         LLVMBuildRet(mod.builder, LLVMGetUndef(fn.type.returnType.llvmType));
